@@ -63,7 +63,7 @@ var localCmd = &cobra.Command{
 		go pollMessages(service, dlqQueueURL, messageChannel)
 
 		for message := range messageChannel {
-			fmt.Println(fmt.Sprintf("Message: %v", message))
+			go forwardMessage(service, dlqQueueURL, queueURL, message)
 		}
 
 		return nil
@@ -85,6 +85,19 @@ func pollMessages(service *sqs.SQS, dlqQueueURL *string, messageChannel chan<- *
 			messageChannel <- message
 		}
 	}
+}
+
+func forwardMessage(service *sqs.SQS, dlqQueueURL *string, queueURL *string, message *sqs.Message) {
+	fmt.Println(fmt.Sprintf("forward: %v", message))
+	service.SendMessage(&sqs.SendMessageInput{
+		MessageAttributes: message.MessageAttributes,
+		MessageBody:       message.Body,
+		QueueUrl:          queueURL,
+	})
+	service.DeleteMessage(&sqs.DeleteMessageInput{
+		QueueUrl:      dlqQueueURL,
+		ReceiptHandle: message.ReceiptHandle,
+	})
 }
 
 func init() {

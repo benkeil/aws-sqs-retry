@@ -68,22 +68,24 @@ to quickly create a Cobra application.`,
 		queues := []Queue{}
 
 		for _, url := range res.QueueUrls {
-			wgReceivers.Add(1)
-			go func(url *string) error {
-				defer wgReceivers.Done()
-				atr, err := service.GetQueueAttributes(&sqs.GetQueueAttributesInput{
-					QueueUrl:       url,
-					AttributeNames: aws.StringSlice([]string{"ApproximateNumberOfMessages"}),
-				})
-				if err != nil {
-					return err
-				}
-				messages := *atr.Attributes["ApproximateNumberOfMessages"]
-				count, _ := strconv.Atoi(messages)
-				name := (*url)[strings.LastIndex(*url, "/")+1:]
-				queues = append(queues, Queue{Url: *url, Name: name, ApproximateNumberOfMessages: count})
-				return nil
-			}(url)
+			if strings.HasSuffix(*url, "dlq") || strings.HasSuffix(*url, "dlq.fifo") {
+				wgReceivers.Add(1)
+				go func(url *string) error {
+					defer wgReceivers.Done()
+					atr, err := service.GetQueueAttributes(&sqs.GetQueueAttributesInput{
+						QueueUrl:       url,
+						AttributeNames: aws.StringSlice([]string{"ApproximateNumberOfMessages"}),
+					})
+					if err != nil {
+						return err
+					}
+					messages := *atr.Attributes["ApproximateNumberOfMessages"]
+					count, _ := strconv.Atoi(messages)
+					name := (*url)[strings.LastIndex(*url, "/")+1:]
+					queues = append(queues, Queue{Url: *url, Name: name, ApproximateNumberOfMessages: count})
+					return nil
+				}(url)
+			}
 		}
 
 		wgReceivers.Wait()
@@ -91,7 +93,6 @@ to quickly create a Cobra application.`,
 		max := findMax(queues)
 		l := strconv.Itoa(len(strconv.Itoa(max)))
 		format := "%0" + l + "d %s"
-		fmt.Println(format)
 		for _, queue := range queues {
 			fmt.Println(fmt.Sprintf(format, queue.ApproximateNumberOfMessages, queue.Name))
 		}
