@@ -73,7 +73,7 @@ func pollMessages(service *sqs.SQS, dlqQueueURL *string, messageChannel chan<- *
 	for {
 		res, err := service.ReceiveMessage(&sqs.ReceiveMessageInput{
 			QueueUrl:              aws.String(*dlqQueueURL),
-			MaxNumberOfMessages:   aws.Int64(1),
+			MaxNumberOfMessages:   aws.Int64(10),
 			WaitTimeSeconds:       aws.Int64(20),
 			MessageAttributeNames: aws.StringSlice([]string{"All"}),
 		})
