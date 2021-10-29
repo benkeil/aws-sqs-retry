@@ -88,15 +88,22 @@ func pollMessages(service *sqs.SQS, dlqQueueURL *string, messageChannel chan<- *
 
 func forwardMessage(service *sqs.SQS, dlqQueueURL *string, queueURL *string, message *sqs.Message) {
 	fmt.Println(fmt.Sprintf("forward: %v", message))
-	service.SendMessage(&sqs.SendMessageInput{
+	_, err := service.SendMessage(&sqs.SendMessageInput{
 		MessageAttributes: message.MessageAttributes,
 		MessageBody:       message.Body,
 		QueueUrl:          queueURL,
 	})
-	service.DeleteMessage(&sqs.DeleteMessageInput{
+	if err != nil {
+		panic("OHOH")
+	}
+
+	_, err = service.DeleteMessage(&sqs.DeleteMessageInput{
 		QueueUrl:      dlqQueueURL,
 		ReceiptHandle: message.ReceiptHandle,
 	})
+	if err != nil {
+		panic("OHOH")
+	}
 }
 
 func init() {

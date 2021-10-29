@@ -82,7 +82,9 @@ to quickly create a Cobra application.`,
 					messages := *atr.Attributes["ApproximateNumberOfMessages"]
 					count, _ := strconv.Atoi(messages)
 					name := (*url)[strings.LastIndex(*url, "/")+1:]
-					queues = append(queues, Queue{Url: *url, Name: name, ApproximateNumberOfMessages: count})
+					if count > 0 {
+						queues = append(queues, Queue{Url: *url, Name: name, ApproximateNumberOfMessages: count})
+					}
 					return nil
 				}(url)
 			}
