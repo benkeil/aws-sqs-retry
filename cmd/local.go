@@ -25,7 +25,6 @@ import (
 )
 
 var DlqName string
-var QueueName string
 
 // localCmd represents the local command
 var localCmd = &cobra.Command{
@@ -48,16 +47,10 @@ var localCmd = &cobra.Command{
 		}
 		dlqQueueURL := dlqRrlResult.QueueUrl
 
-		a, _ := service.ListDeadLetterSourceQueues(&sqs.ListDeadLetterSourceQueuesInput{})
-		fmt.Println(fmt.Sprintf("%v", a))
-
-		queueRrlResult, err := service.GetQueueUrl(&sqs.GetQueueUrlInput{
-			QueueName: &QueueName,
+		a, _ := service.ListDeadLetterSourceQueues(&sqs.ListDeadLetterSourceQueuesInput{
+			QueueUrl: dlqQueueURL,
 		})
-		if err != nil {
-			return err
-		}
-		queueURL := queueRrlResult.QueueUrl
+		queueURL := a.QueueUrls[0]
 
 		fmt.Println(fmt.Sprintf("sending messages from %s to %s", *dlqQueueURL, *queueURL))
 
@@ -106,7 +99,5 @@ func forwardMessage(service *sqs.SQS, dlqQueueURL *string, queueURL *string, mes
 func init() {
 	rootCmd.AddCommand(localCmd)
 	localCmd.Flags().StringVarP(&DlqName, "dlq", "d", "", "The dead letter queue")
-	localCmd.Flags().StringVarP(&QueueName, "queue", "q", "", "The target queue")
 	localCmd.MarkFlagRequired("dlq")
-	localCmd.MarkFlagRequired("queue")
 }

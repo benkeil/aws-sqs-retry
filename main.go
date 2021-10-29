@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "aws-sqs-retry/cmd"
+import "github.com/benkeil/aws-sqs-retry/cmd"
 
 func main() {
 	cmd.Execute()
