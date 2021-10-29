@@ -1,4 +1,4 @@
-module aws-sqs-retry
+module github.com/benkeil/aws-sqs-retry
 
 go 1.16
 

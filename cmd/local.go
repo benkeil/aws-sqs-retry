@@ -48,6 +48,9 @@ var localCmd = &cobra.Command{
 		}
 		dlqQueueURL := dlqRrlResult.QueueUrl
 
+		a, _ := service.ListDeadLetterSourceQueues(&sqs.ListDeadLetterSourceQueuesInput{})
+		fmt.Println(fmt.Sprintf("%v", a))
+
 		queueRrlResult, err := service.GetQueueUrl(&sqs.GetQueueUrlInput{
 			QueueName: &QueueName,
 		})
@@ -106,14 +109,4 @@ func init() {
 	localCmd.Flags().StringVarP(&QueueName, "queue", "q", "", "The target queue")
 	localCmd.MarkFlagRequired("dlq")
 	localCmd.MarkFlagRequired("queue")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// localCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// localCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
