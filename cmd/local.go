@@ -76,6 +76,7 @@ func pollMessages(service *sqs.SQS, dlqQueueURL *string, messageChannel chan<- *
 			MaxNumberOfMessages:   aws.Int64(10),
 			WaitTimeSeconds:       aws.Int64(20),
 			MessageAttributeNames: aws.StringSlice([]string{"All"}),
+			AttributeNames:        aws.StringSlice([]string{"All"}),
 		})
 		if err != nil {
 			fmt.Println(fmt.Sprintf("failed to fetch sqs message %v", err))
@@ -92,6 +93,9 @@ func forwardMessage(service *sqs.SQS, dlqQueueURL *string, queueURL *string, mes
 		MessageAttributes: message.MessageAttributes,
 		MessageBody:       message.Body,
 		QueueUrl:          queueURL,
+		MessageGroupId:    message.Attributes["MessageGroupId"],
+		// @TODO add a uniqe hash for the run to the dedeuplciation id
+		MessageDeduplicationId: message.Attributes["MessageDeduplicationId"],
 	})
 	if err != nil {
 		panic("OHOH")
