@@ -47,10 +47,13 @@ var localCmd = &cobra.Command{
 		}
 		dlqQueueURL := dlqRrlResult.QueueUrl
 
-		a, _ := service.ListDeadLetterSourceQueues(&sqs.ListDeadLetterSourceQueuesInput{
+		deadLetterSourceQueues, err := service.ListDeadLetterSourceQueues(&sqs.ListDeadLetterSourceQueuesInput{
 			QueueUrl: dlqQueueURL,
 		})
-		queueURL := a.QueueUrls[0]
+		if err != nil {
+			return err
+		}
+		queueURL := deadLetterSourceQueues.QueueUrls[0]
 
 		fmt.Println(fmt.Sprintf("sending messages from %s to %s", *dlqQueueURL, *queueURL))
 
